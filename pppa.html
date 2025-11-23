@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema Solar 3D</title>
-    
-    <link rel="stylesheet" href="style.css">
-
+    <title>Luna 3D Interactiva</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; }
+        canvas { display: block; }
+        #info {
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            font-family: sans-serif;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 0 0 5px #000;
+        }
+    </style>
     <script type="importmap">
         {
             "imports": {
@@ -17,13 +29,89 @@
     </script>
 </head>
 <body>
+    <div id="info">Arrastra para rotar | Rueda del mouse para zoom</div>
 
-    <div id="ui">
-        <h1>Sistema Solar Viz</h1>
-        <p>Click Izq: Rotar | Click Der: Mover | Rueda: Zoom</p>
-    </div>
+    <script type="module">
+        import * as THREE from 'three';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-    <script type="module" src="main.js"></script>
+        // 1. Configuración de la Escena
+        const scene = new THREE.Scene();
+        
+        // Fondo de estrellas (opcional pero realista)
+        const loader = new THREE.TextureLoader();
+        
+        // 2. Cámara
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5; // Nos alejamos un poco para ver la luna completa
 
+        // 3. Renderizador (Calidad alta)
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio); // Para pantallas retina/alta densidad
+        // Ajuste de tono para mayor realismo
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        document.body.appendChild(renderer.domElement);
+
+        // 4. Creación de la Luna
+        // Geometría: Una esfera con muchos segmentos para que se vea redonda (64, 64)
+        const geometry = new THREE.SphereGeometry(1.5, 64, 64);
+
+        // Carga de Texturas (Mapas de la NASA o fuentes públicas)
+        const textureMap = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg');
+        const bumpMap = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/master/examples/textures/planets/moon_1024.jpg'); 
+        // Nota: Usamos la misma imagen para bump por simplicidad, pero idealmente se usa un mapa de altura específico.
+
+        // Material: MeshStandardMaterial reacciona a la luz
+        const material = new THREE.MeshStandardMaterial({
+            map: textureMap,       // El color de la luna
+            bumpMap: bumpMap,      // Simula la profundidad de los cráteres
+            bumpScale: 0.05,       // Qué tan profundos se ven los cráteres
+            roughness: 1,          // La luna es polvorienta, no brilla como plástico
+            metalness: 0
+        });
+
+        const moon = new THREE.Mesh(geometry, material);
+        scene.add(moon);
+
+        // 5. Iluminación (El Sol)
+        // Luz direccional fuerte desde un lado para crear sombras en los cráteres
+        const sunLight = new THREE.DirectionalLight(0xffffff, 2.5);
+        sunLight.position.set(5, 3, 5);
+        scene.add(sunLight);
+
+        // Luz ambiental tenue para que la parte oscura no sea 100% negra
+        const ambientLight = new THREE.AmbientLight(0x333333); 
+        scene.add(ambientLight);
+
+        // 6. Controles (Interacción)
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true; // Hace que el movimiento sea suave (inercia)
+        controls.dampingFactor = 0.05;
+        controls.enablePan = false;    // Evita mover la luna fuera del centro
+        controls.minDistance = 2;      // Límite de zoom in
+        controls.maxDistance = 10;     // Límite de zoom out
+
+        // 7. Animación
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotación automática lenta (puedes quitarla si prefieres)
+            moon.rotation.y += 0.001;
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Ajuste al redimensionar ventana
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
 </body>
 </html>
