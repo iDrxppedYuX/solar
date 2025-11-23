@@ -1,1 +1,51 @@
 
+/* Configuración base para pantalla completa y fondo negro */
+body { 
+    margin: 0; 
+    overflow: hidden; 
+    background-color: #000; 
+    color: white; 
+    font-family: sans-serif; 
+}
+
+/* Asegura que el render 3D no tenga barras de scroll */
+canvas { 
+    display: block; 
+}
+
+/* Estilos para la interfaz de texto superior */
+#ui {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    pointer-events: none; /* Permite hacer click "a través" del texto */
+    z-index: 10;
+}
+
+h1 { 
+    margin: 0; 
+    font-size: 1.2rem; 
+    text-transform: uppercase; 
+    letter-spacing: 2px; 
+}
+
+p { 
+    font-size: 0.8rem; 
+    opacity: 0.7; 
+}
+
+/* Estilos de las etiquetas flotantes de los planetas */
+.label {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 10px;
+    pointer-events: none;
+    color: white;
+    /* Centramos la etiqueta respecto a su coordenada */
+    transform: translate(-50%, -150%);
+    white-space: nowrap;
+    font-weight: bold;
+    transition: opacity 0.1s;
+}
